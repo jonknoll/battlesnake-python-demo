@@ -39,13 +39,82 @@ def start():
             initialize your snake state here using the
             request's data if necessary.
     """
-    print(json.dumps(data))
+    #print(json.dumps(data))
 
-    color = "#00FF00"
-
+    #color = "#00FF00"
+    colorHex = random.randrange(0xFFFFFF)
+    color = "#{:x}".format(colorHex)
+    
     return start_response(color)
 
 
+    
+    
+    
+def decideMove(data):
+    height = data["board"]["height"]
+    width = data["board"]["width"]
+
+    badCoords = []
+
+    for x in range(width):
+        bad = (x, -1)
+        badCoords.append(bad)
+        bad = (x, height)
+        badCoords.append(bad)
+
+    for y in range(width):
+        bad = (-1, y)
+        badCoords.append(bad)
+        bad = (width, y)
+        badCoords.append(bad)
+
+    for snake in data["board"]["snakes"]:
+        for xycoord in snake["body"]:
+            bad = (xycoord["x"], xycoord["y"])
+            badCoords.append(bad)
+            
+    # get coordinates of our snake head
+    myHead = data["you"]["body"][0]
+
+    possibleMoves = []
+
+    # left
+    coord = (myHead["x"]-1, myHead["y"])
+    if coord not in badCoords:
+        possibleMoves.append("left")
+       
+    # right
+    coord = (myHead["x"]+1, myHead["y"])
+    if coord not in badCoords:
+        possibleMoves.append("right")
+
+    # up
+    coord = (myHead["x"], myHead["y"]-1)
+    if coord not in badCoords:
+        possibleMoves.append("up")
+
+    # down
+    coord = (myHead["x"], myHead["y"]+1)
+    if coord not in badCoords:
+        possibleMoves.append("down")
+
+    # final decision
+    if len(possibleMoves) > 0:
+        finalMove = random.choice(possibleMoves)
+    else:
+        # doesn't really matter
+        finalMove = random.choice(["left", "right", "up", "down"])
+
+    print("badCoords={}".format(badCoords))
+    print("possibleMoves={}".format(possibleMoves))
+    print("finalMove={}".format(finalMove))
+    return finalMove
+
+   
+    
+    
+    
 @bottle.post('/move')
 def move():
     data = bottle.request.json
@@ -54,10 +123,11 @@ def move():
     TODO: Using the data from the endpoint request object, your
             snake AI must choose a direction to move in.
     """
-    print(json.dumps(data))
+    #print(json.dumps(data))
 
-    directions = ['up', 'down', 'left', 'right']
-    direction = random.choice(directions)
+    #directions = ['up', 'down', 'left', 'right']
+    #direction = random.choice(directions)
+    direction = decideMove(data)
 
     return move_response(direction)
 
@@ -70,7 +140,7 @@ def end():
     TODO: If your snake AI was stateful,
         clean up any stateful objects here.
     """
-    print(json.dumps(data))
+    #print(json.dumps(data))
 
     return end_response()
 
@@ -84,3 +154,5 @@ if __name__ == '__main__':
         port=os.getenv('PORT', '8080'),
         debug=os.getenv('DEBUG', True)
     )
+
+    
