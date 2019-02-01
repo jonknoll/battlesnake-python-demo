@@ -3,7 +3,7 @@ import os
 import random
 import bottle
 
-from api import ping_response, start_response, move_response, end_response
+from .api import ping_response, start_response, move_response, end_response
 
 @bottle.route('/')
 def index():
@@ -147,12 +147,17 @@ def end():
 # Expose WSGI app (so gunicorn can find it)
 application = bottle.default_app()
 
-if __name__ == '__main__':
+
+def main():
     bottle.run(
         application,
         host=os.getenv('IP', '0.0.0.0'),
         port=os.getenv('PORT', '8080'),
         debug=os.getenv('DEBUG', True)
     )
+
+    
+if __name__ == '__main__':
+    main()
 
     
